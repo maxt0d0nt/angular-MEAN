@@ -10,7 +10,7 @@ router.get("/", (req, res) => res.send("Hello max"));
 router.post("/signup", async (req, res) => {
   const newUser = new User({ email, password });
   await newUser.save();
-  const token = jwt.sign({ _id: newUser._id }, "secretkey");
+  const token = jwt.sign({ _id: newUser._id }, 'secret');
   res.status(200).json({ token });
 });
 
@@ -19,7 +19,7 @@ router.post("/signin", async (req, res) => {
   const user = await User.findOne({ email });
   if (!user) return res.status(401).send("the email doesn't exist");
   if (user.password !== password) return res.status(401).send("wrong password");
-  const token = jwt.sign({ _id: user._id }, "secretkey");
+  const token = jwt.sign({ _id: user._id }, 'secret');
   res.status(200).json({ token });
 });
 
@@ -80,9 +80,13 @@ const token = req.headers.authorization.split(' ')[1]
 if(token === "null"){
     return res.status(401).send('Unauthorize request')
 }
-
-const payload = jwt.verify(token, 'secretkey')
-console.log(payload)
 console.log(token)
-
+const payload = jwt.verify(token, 'secret')
+console.log(payload)
+req.userId = payload._id;
+next()
 }
+
+router.get('/profile', verifyToken, (req, res) => {
+    res.send(req.userId)
+})
